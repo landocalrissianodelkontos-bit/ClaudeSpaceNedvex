@@ -28,7 +28,7 @@ import re
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 
 import config
-from scrapers.base import CaseData, CaseEvent, RawCache, Throttler, retry
+from scrapers.base import CaseData, CaseEvent, RawCache, Throttler, retry, playwright_launch_kwargs
 
 _throttler = Throttler()
 _cache = RawCache()
@@ -123,7 +123,7 @@ def fetch_many(urls: list[str], use_cache: bool = True) -> list[CaseData]:
         return results
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=config.PLAYWRIGHT_HEADLESS)
+        browser = p.chromium.launch(headless=config.PLAYWRIGHT_HEADLESS, **playwright_launch_kwargs())
         page = browser.new_page(user_agent=config.USER_AGENT)
         page.set_default_navigation_timeout(config.PLAYWRIGHT_NAV_TIMEOUT_MS)
 

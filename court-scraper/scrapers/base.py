@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import random
 import time
 from dataclasses import dataclass, field, asdict
@@ -17,6 +18,21 @@ from pathlib import Path
 from typing import Optional
 
 import config
+
+
+def playwright_launch_kwargs() -> dict:
+    """
+    Доп. параметры для browser.launch(). requests/curl подхватывают
+    HTTPS_PROXY/HTTP_PROXY из окружения автоматически, а Chromium под
+    Playwright — нет: если сеть в окружении идёт только через прокси
+    (напр. корпоративный egress-прокси в песочнице), без явной передачи
+    proxy в launch() Chromium будет пытаться соединяться напрямую и
+    ловить net::ERR_CONNECTION_RESET там, где requests спокойно работает.
+    """
+    proxy_url = os.environ.get("HTTPS_PROXY") or os.environ.get("https_proxy")
+    if proxy_url:
+        return {"proxy": {"server": proxy_url}}
+    return {}
 
 
 @dataclass
